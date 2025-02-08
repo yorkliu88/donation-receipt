@@ -20,7 +20,7 @@
     </form>
 
     <script>
-        function generatePDF() {
+        async function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
@@ -28,43 +28,58 @@
             let amount = document.getElementById("amount").value;
             let date = new Date().toLocaleDateString('en-US');
 
+            // Load image as base64
+            let imgUrl = "https://yorkliu88.github.io/donation-receipt/risingstarsinfinite-logo-1.jpg";
+            let imgData = await getBase64Image(imgUrl);
+
+            // Add Logo to Top Right
+            let pageWidth = doc.internal.pageSize.width;
+            let logoWidth = 50;
+            let xPosition = pageWidth - logoWidth - 10; // 10px margin from right
+            doc.addImage(imgData, "JPEG", xPosition, 10, logoWidth, 20); 
+
             doc.setFont("helvetica", "bold");
             doc.setFontSize(14);
             doc.text("RISINGSTARS INFINITE", 10, 20);
             
             doc.setFontSize(11);
             doc.setFont("helvetica", "normal");
-            doc.text("43575 MISSION BLVD SUITE 338", 10, 28);
-            doc.text("FREMONT, CA 94539", 10, 34);
-            doc.text("EIN 99-1827642", 10, 42);
+            doc.text("43575 MISSION BLVD SUITE 338", 10, 26);
+            doc.text("FREMONT, CA 94539", 10, 31);
+            doc.text("EIN 99-1827642", 10, 38);
             
-            doc.text(date, 10, 52);
+            doc.text(date, 10, 48);
             
-            doc.text(`Dear ${name},`, 10, 62);
-            doc.text(`Thank you for your donation of $${amount} on ${date} to RisingStars Infinite. Your contribution supports our mission to promote youth sports.`, 10, 72, {maxWidth: 180});
+            doc.text(`Dear ${name},`, 10, 58);
+            doc.text(`Thank you for your donation of $${amount} on ${date} to RisingStars Infinite. Your contribution supports our mission to promote youth sports.`, 10, 66, {maxWidth: 180});
 
-            doc.text("We sincerely appreciate your support. Please keep this receipt for your tax records.", 10, 85, {maxWidth: 180});
+            doc.text("We sincerely appreciate your support. Please keep this receipt for your tax records.", 10, 76, {maxWidth: 180});
             
-            doc.text("RisingStars Infinite is a 501(c)(3) nonprofit organization (EIN: 99-1827642).", 10, 95, {maxWidth: 180});
+            doc.text("RisingStars Infinite is a 501(c)(3) nonprofit organization (EIN: 99-1827642).", 10, 86, {maxWidth: 180});
             
             doc.setFont("helvetica", "bold");
-            doc.text("Sincerely,", 10, 110);
-            doc.text("RisingStars Infinite", 10, 116);
+            doc.text("Sincerely,", 10, 96);
+            doc.text("RisingStars Infinite", 10, 101);
 
-            // Load and add the logo
-            let imgUrl = "https://yorkliu88.github.io/donation-receipt/risingstarsinfinite-logo-1.jpg";
-            let img = new Image();
-            img.src = imgUrl;
-            img.onload = function () {
-                // Calculate the x position for the top-right corner
-                let pageWidth = doc.internal.pageSize.width;
-                let logoWidth = 50;
-                let xPosition = pageWidth - logoWidth - 10; // 10px margin from the right side
+            doc.save(`Donation_Receipt_${name}.pdf`);
+        }
 
-                // Add the image to the top right corner
-                doc.addImage(img, "JPEG", xPosition, 10, logoWidth, 20); // Adjust position (x, y) and size (width, height)
-                doc.save(`Donation_Receipt_${name}.pdf`);
-            };
+        // Function to convert image URL to base64
+        function getBase64Image(url) {
+            return new Promise((resolve, reject) => {
+                let img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.src = url;
+                img.onload = function () {
+                    let canvas = document.createElement("canvas");
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    let ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0);
+                    resolve(canvas.toDataURL("image/jpeg"));
+                };
+                img.onerror = reject;
+            });
         }
     </script>
 </body>
