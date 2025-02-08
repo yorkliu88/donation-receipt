@@ -41,23 +41,22 @@
             doc.text(date, 10, 52);
             
             doc.text(`Dear ${name},`, 10, 62);
-            doc.text(`Thank you for your donation of $${amount} on ${date} to RisingStars Infinite.`, 10, 72, {maxWidth: 180});
-            doc.text("Your contribution supports our mission to promote youth sports.", 10, 78, {maxWidth: 180});
+            doc.text(`Thank you for your donation of $${amount} on ${date} to RisingStars Infinite. Your contribution supports our mission to promote youth sports.`, 10, 72, {maxWidth: 180});
+
+            doc.text("We sincerely appreciate your support. Please keep this receipt for your tax records.", 10, 85, {maxWidth: 180});
             
-            doc.text("We sincerely appreciate your support. Please keep this receipt for your tax records.", 10, 90, {maxWidth: 180});
-            
-            doc.text("RisingStars Infinite is a 501(c)(3) nonprofit organization (EIN: 99-1827642).", 10, 102, {maxWidth: 180});
+            doc.text("RisingStars Infinite is a 501(c)(3) nonprofit organization (EIN: 99-1827642).", 10, 97, {maxWidth: 180});
             
             doc.setFont("helvetica", "bold");
-            doc.text("Sincerely,", 10, 115);
-            doc.text("RisingStars Infinite", 10, 121);
+            doc.text("Sincerely,", 10, 110);
+            doc.text("RisingStars Infinite", 10, 116);
 
             // Load and add the logo
             let imgUrl = "https://yorkliu88.github.io/donation-receipt/risingstarsinfinite-logo-1.jpg";
             let img = new Image();
             img.src = imgUrl;
             img.onload = function () {
-                doc.addImage(img, "JPEG", 10, 130, 50, 20); // Adjust position (x, y) and size (width, height)
+                doc.addImage(img, "JPEG", 10, 125, 50, 20); // Adjust position (x, y) and size (width, height)
                 doc.save(`Donation_Receipt_${name}.pdf`);
             };
         }
