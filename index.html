@@ -26,23 +26,31 @@
 
             let name = document.getElementById("name").value;
             let amount = document.getElementById("amount").value;
-            let date = new Date().toLocaleDateString();
+            let date = new Date().toLocaleDateString('en-US');
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(16);
+            doc.setFontSize(14);
             doc.text("RISINGSTARS INFINITE", 10, 20);
-
+            
             doc.setFontSize(12);
-            doc.text("EIN: 99-1827642", 10, 30);
-            doc.text(`Date: ${date}`, 10, 40);
-            doc.text(`Donor Name: ${name}`, 10, 50);
-            doc.text(`Donation Amount: $${amount}`, 10, 60);
-
-            doc.setFontSize(10);
-            doc.text("Thank you for your generous donation.", 10, 80);
-            doc.text("RISINGSTARS INFINITE is a 501(c)(3) nonprofit organization.", 10, 90);
-            doc.text("No goods or services were provided in exchange for this donation.", 10, 100);
-            doc.text("Your donation is tax-deductible to the fullest extent allowed by law.", 10, 110);
+            doc.setFont("helvetica", "normal");
+            doc.text("43575 MISSION BLVD SUITE 338", 10, 30);
+            doc.text("FREMONT, CA 94539", 10, 40);
+            doc.text("EIN 99-1827642", 10, 50);
+            
+            doc.text(date, 10, 65);
+            
+            doc.text(`Dear ${name},`, 10, 80);
+            doc.text(`Thank you for your donation of $${amount} on ${date} to RisingStars Infinite.`, 10, 95, {maxWidth: 180});
+            doc.text("Your contribution supports our mission to promote youth sports.", 10, 105, {maxWidth: 180});
+            
+            doc.text("We sincerely appreciate your support. Please keep this receipt for your tax records.", 10, 125, {maxWidth: 180});
+            
+            doc.text("RisingStars Infinite is a 501(c)(3) nonprofit organization (EIN: 99-1827642).", 10, 145, {maxWidth: 180});
+            
+            doc.setFont("helvetica", "bold");
+            doc.text("Sincerely,", 10, 165);
+            doc.text("RisingStars Infinite", 10, 175);
 
             doc.save(`Donation_Receipt_${name}.pdf`);
         }
