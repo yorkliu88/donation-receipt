@@ -56,7 +56,13 @@
             let img = new Image();
             img.src = imgUrl;
             img.onload = function () {
-                doc.addImage(img, "JPEG", 10, 125, 50, 20); // Adjust position (x, y) and size (width, height)
+                // Calculate the x position for the top-right corner
+                let pageWidth = doc.internal.pageSize.width;
+                let logoWidth = 50;
+                let xPosition = pageWidth - logoWidth - 10; // 10px margin from the right side
+
+                // Add the image to the top right corner
+                doc.addImage(img, "JPEG", xPosition, 10, logoWidth, 20); // Adjust position (x, y) and size (width, height)
                 doc.save(`Donation_Receipt_${name}.pdf`);
             };
         }
