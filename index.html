@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Donation Receipt - RISINGSTARS INFINITE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
     <h2>Generate Your Donation Receipt</h2>
@@ -63,7 +63,7 @@
             // Convert PDF to Base64
             let pdfBase64 = doc.output("datauristring").split(",")[1];
 
-            // Initialize EmailJS
+            // Initialize EmailJS (Corrected Version)
             emailjs.init("CAPL43g-1pzkFSaYc"); 
 
             // Send Email
