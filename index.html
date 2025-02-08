@@ -51,15 +51,16 @@
             doc.text(date, 10, 48);
             
             doc.text(`Dear ${name},`, 10, 58);
-            doc.text(`Thank you for your donation of $${amount} on ${date} to RisingStars Infinite. Your contribution supports our mission to promote youth sports.`, 10, 66, {maxWidth: 180});
+            doc.text(`Thank you for your donation of $${amount} on ${date} to RisingStars Infinite.`, 10, 66, {maxWidth: 180});
+            doc.text(`Your contribution supports our mission to promote youth sports.`, 10, 74, {maxWidth: 180}); // Adjusted spacing
 
-            doc.text("We sincerely appreciate your support. Please keep this receipt for your tax records.", 10, 76, {maxWidth: 180});
+            doc.text("We sincerely appreciate your support. Please keep this receipt for your tax records.", 10, 86, {maxWidth: 180});
             
-            doc.text("RisingStars Infinite is a 501(c)(3) nonprofit organization (EIN: 99-1827642).", 10, 86, {maxWidth: 180});
+            doc.text("RisingStars Infinite is a 501(c)(3) nonprofit organization (EIN: 99-1827642).", 10, 98, {maxWidth: 180});
             
             doc.setFont("helvetica", "bold");
-            doc.text("Sincerely,", 10, 96);
-            doc.text("RisingStars Infinite", 10, 101);
+            doc.text("Sincerely,", 10, 110);
+            doc.text("RisingStars Infinite", 10, 116);
 
             doc.save(`Donation_Receipt_${name}.pdf`);
         }
