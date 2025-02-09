@@ -6,10 +6,9 @@
     <title>Donation Receipt - RISINGSTARS INFINITE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
 </head>
 <body>
-    <h2>Generate Your Donation Receipt</h2>
+    <h2>Generate & Email Your Donation Receipt</h2>
     
     <form id="donationForm">
         <label for="name">Donor's Name:</label>
@@ -21,130 +20,90 @@
         <label for="amount">Donation Amount ($):</label>
         <input type="number" id="amount" required><br><br>
 
-        <button type="button" id="sendEmail">Send Receipt</button>
+        <button type="button" onclick="generateAndSendPDF()">Download & Send Email</button>
     </form>
 
     <script>
-        document.getElementById("sendEmail").addEventListener("click", async function () {
+        function generateAndSendPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            let name = document.getElementById("name").value;
-            let email = document.getElementById("email").value;
-            let amount = document.getElementById("amount").value;
+            let name = document.getElementById("name").value.trim();
+            let email = document.getElementById("email").value.trim();
+            let amount = document.getElementById("amount").value.trim();
             let date = new Date().toLocaleDateString('en-US');
 
-            // Add Logo to PDF
-            let imgUrl = "https://yorkliu88.github.io/donation-receipt/risingstarsinfinite-logo-1.jpg";
-            let imgData = await getBase64Image(imgUrl);
-            let pageWidth = doc.internal.pageSize.width;
-            let logoWidth = 50;
-            let xPosition = pageWidth - logoWidth - 10;
-            doc.addImage(imgData, "JPEG", xPosition, 10, logoWidth, 20);
+            if (!name || !email || !amount) {
+                alert("Please enter your name, email, and donation amount.");
+                return;
+            }
 
-            // PDF Content
             doc.setFont("helvetica", "bold");
             doc.setFontSize(14);
             doc.text("RISINGSTARS INFINITE", 10, 20);
+            
             doc.setFontSize(11);
             doc.setFont("helvetica", "normal");
-            doc.text("43575 MISSION BLVD SUITE 338", 10, 26);
-            doc.text("FREMONT, CA 94539", 10, 31);
-            doc.text("EIN 99-1827642", 10, 38);
-            doc.text(date, 10, 48);
-            doc.text(`Dear ${name},`, 10, 58);
-            doc.text(`Thank you for your donation of $${amount} on ${date}.`, 10, 68, {maxWidth: 180});
-            doc.text("Your contribution supports our mission to promote youth sports.", 10, 74, {maxWidth: 180});
+            doc.text("43575 MISSION BLVD SUITE 338", 10, 28);
+            doc.text("FREMONT, CA 94539", 10, 34);
+            doc.text("EIN 99-1827642", 10, 42);
+            
+            doc.text(date, 10, 52);
+            
+            doc.text(`Dear ${name},`, 10, 62);
+            doc.text(`Thank you for your donation of $${amount} on ${date} to RisingStars Infinite. Your contribution supports our mission to promote youth sports.`, 10, 72, {maxWidth: 180});
+
             doc.text("We sincerely appreciate your support. Please keep this receipt for your tax records.", 10, 85, {maxWidth: 180});
+            
             doc.text("RisingStars Infinite is a 501(c)(3) nonprofit organization (EIN: 99-1827642).", 10, 95, {maxWidth: 180});
+            
             doc.setFont("helvetica", "bold");
             doc.text("Sincerely,", 10, 110);
             doc.text("RisingStars Infinite", 10, 116);
 
-            // Convert PDF to Blob
-            let pdfBlob = doc.output("blob");
+            // Load and add the logo
+            let imgUrl = "https://yorkliu88.github.io/donation-receipt/risingstarsinfinite-logo-1.jpg";
+            let img = new Image();
+            img.src = imgUrl;
+            img.crossOrigin = "Anonymous"; // Prevents CORS issues
+            
+            img.onload = function () {
+                let pageWidth = doc.internal.pageSize.width;
+                let logoWidth = 50;
+                let xPosition = pageWidth - logoWidth - 10;
 
-            // Upload to Google Drive and Get Download Link
-            let pdfUrl = await uploadToGoogleDrive(pdfBlob, `${name}-receipt.pdf`);
+                doc.addImage(img, "JPEG", xPosition, 10, logoWidth, 20);
 
-            // Initialize EmailJS
-            emailjs.init("CAPL43g-1pzkFSaYc");
+                // Download the PDF
+                let pdfFilename = `Donation_Receipt_${name}.pdf`;
+                doc.save(pdfFilename);
 
-            // Send Email with Download Link
+                // Send email notification via EmailJS
+                sendEmail(email, name, amount, date);
+            };
+
+            img.onerror = function () {
+                console.error("Error loading logo image.");
+                let pdfFilename = `Donation_Receipt_${name}.pdf`;
+                doc.save(pdfFilename);
+                sendEmail(email, name, amount, date);
+            };
+        }
+
+        // Function to send an email with EmailJS
+        function sendEmail(email, name, amount, date) {
+            emailjs.init("CAPL43g-1pzkFSaYc"); // Your EmailJS Public Key
+
             emailjs.send("service_cbiwg2w", "template_dltxvoe", {
                 to_email: email,
                 donor_name: name,
                 donation_amount: amount,
-                pdf_link: pdfUrl
+                donation_date: date
             }).then(function(response) {
-                alert("Email sent successfully!");
+                alert("Email notification sent successfully!");
             }, function(error) {
                 console.error("Failed to send email:", error);
                 alert("Failed to send email.");
-            });
-        });
-
-        // Upload PDF to Google Drive
-        async function uploadToGoogleDrive(pdfBlob, fileName) {
-            return new Promise((resolve, reject) => {
-                gapi.load('client:auth2', async function () {
-                    await gapi.client.init({
-                        apiKey: "AIzaSyDgZZgXTnHmNd7Qv-8yIOPXY5l_ySRhJ3M", // Replace with your new API Key
-                        clientId: "735364000421-qfukddmp2t33dqek26kkvdgqrqi18p8b.apps.googleusercontent.com",
-                        discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-                        scope: "https://www.googleapis.com/auth/drive.file"
-                    });
-
-                    await gapi.auth2.getAuthInstance().signIn();
-
-                    let metadata = {
-                        name: fileName,
-                        mimeType: 'application/pdf',
-                        parents: ["18SkC-TSWidRwCymOQbHeJ46SVw1zi73R"] // Your Google Drive Folder ID
-                    };
-
-                    let formData = new FormData();
-                    formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-                    formData.append("file", pdfBlob);
-
-                    let response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
-                        method: "POST",
-                        headers: { Authorization: `Bearer ${gapi.auth.getToken().access_token}` },
-                        body: formData
-                    });
-
-                    let result = await response.json();
-                    
-                    // Make File Public
-                    await fetch(`https://www.googleapis.com/drive/v3/files/${result.id}/permissions`, {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${gapi.auth.getToken().access_token}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({ role: "reader", type: "anyone" })
-                    });
-
-                    resolve(`https://drive.google.com/uc?export=download&id=${result.id}`);
-                });
-            });
-        }
-
-        // Convert Image to Base64
-        function getBase64Image(url) {
-            return new Promise((resolve, reject) => {
-                let img = new Image();
-                img.crossOrigin = "";
-                img.src = url;
-                img.onload = function () {
-                    let canvas = document.createElement("canvas");
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    let ctx = canvas.getContext("2d");
-                    ctx.drawImage(img, 0, 0);
-                    resolve(canvas.toDataURL("image/jpeg"));
-                };
-                img.onerror = reject;
             });
         }
     </script>
