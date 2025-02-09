@@ -45,6 +45,12 @@
                 return;
             }
 
+            // Validate donation amount (must be a positive number)
+            if (!isValidAmount(amount)) {
+                alert("Please enter a valid donation amount greater than 0.");
+                return;
+            }
+
             doc.setFont("helvetica", "bold");
             doc.setFontSize(14);
             doc.text("RISINGSTARS INFINITE", 10, 20);
@@ -107,6 +113,12 @@
         function isValidEmail(email) {
             let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailPattern.test(email);
+        }
+
+        // Function to validate donation amount
+        function isValidAmount(amount) {
+            let amountValue = parseFloat(amount);
+            return !isNaN(amountValue) && amountValue > 0;
         }
 
         // Function to send an email with EmailJS
