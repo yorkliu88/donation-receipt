@@ -80,6 +80,9 @@
 
                 // Send email notification via EmailJS
                 sendEmail(email, name, amount, date);
+
+                // Clear the form after submission
+                document.getElementById("donationForm").reset();
             };
 
             img.onerror = function () {
@@ -87,6 +90,9 @@
                 let pdfFilename = `Donation_Receipt_${name}.pdf`;
                 doc.save(pdfFilename);
                 sendEmail(email, name, amount, date);
+
+                // Clear the form after submission
+                document.getElementById("donationForm").reset();
             };
         }
 
