@@ -33,8 +33,15 @@
             let amount = document.getElementById("amount").value.trim();
             let date = new Date().toLocaleDateString('en-US');
 
+            // Validate inputs
             if (!name || !email || !amount) {
                 alert("Please enter your name, email, and donation amount.");
+                return;
+            }
+
+            // Validate email format
+            if (!isValidEmail(email)) {
+                alert("Please enter a valid email address.");
                 return;
             }
 
@@ -94,6 +101,12 @@
                 // Clear the form after submission
                 document.getElementById("donationForm").reset();
             };
+        }
+
+        // Function to validate email format
+        function isValidEmail(email) {
+            let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailPattern.test(email);
         }
 
         // Function to send an email with EmailJS
