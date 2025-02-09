@@ -6,6 +6,7 @@
     <title>Donation Receipt - RISINGSTARS INFINITE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
 </head>
 <body>
     <h2>Generate Your Donation Receipt</h2>
@@ -33,13 +34,13 @@
             let amount = document.getElementById("amount").value;
             let date = new Date().toLocaleDateString('en-US');
 
-            // Add Logo to Top Right
+            // Add Logo to PDF
             let imgUrl = "https://yorkliu88.github.io/donation-receipt/risingstarsinfinite-logo-1.jpg";
             let imgData = await getBase64Image(imgUrl);
             let pageWidth = doc.internal.pageSize.width;
             let logoWidth = 50;
-            let xPosition = pageWidth - logoWidth - 10; 
-            doc.addImage(imgData, "JPEG", xPosition, 10, logoWidth, 20); 
+            let xPosition = pageWidth - logoWidth - 10;
+            doc.addImage(imgData, "JPEG", xPosition, 10, logoWidth, 20);
 
             // PDF Content
             doc.setFont("helvetica", "bold");
@@ -52,7 +53,7 @@
             doc.text("EIN 99-1827642", 10, 38);
             doc.text(date, 10, 48);
             doc.text(`Dear ${name},`, 10, 58);
-            doc.text(`Thank you for your donation of $${amount} on ${date} to RisingStars Infinite.`, 10, 68, {maxWidth: 180});
+            doc.text(`Thank you for your donation of $${amount} on ${date}.`, 10, 68, {maxWidth: 180});
             doc.text("Your contribution supports our mission to promote youth sports.", 10, 74, {maxWidth: 180});
             doc.text("We sincerely appreciate your support. Please keep this receipt for your tax records.", 10, 85, {maxWidth: 180});
             doc.text("RisingStars Infinite is a 501(c)(3) nonprofit organization (EIN: 99-1827642).", 10, 95, {maxWidth: 180});
@@ -60,20 +61,22 @@
             doc.text("Sincerely,", 10, 110);
             doc.text("RisingStars Infinite", 10, 116);
 
-            // Convert PDF to Base64
-            let pdfBase64 = doc.output("datauristring").split(",")[1];
+            // Convert PDF to Blob
+            let pdfBlob = doc.output("blob");
 
-            // Initialize EmailJS (Corrected Version)
-            emailjs.init("CAPL43g-1pzkFSaYc"); 
+            // Upload to Google Drive and Get Download Link
+            let pdfUrl = await uploadToGoogleDrive(pdfBlob, `${name}-receipt.pdf`);
 
-            // Send Email
+            // Initialize EmailJS
+            emailjs.init("CAPL43g-1pzkFSaYc");
+
+            // Send Email with Download Link
             emailjs.send("service_cbiwg2w", "template_dltxvoe", {
                 to_email: email,
                 donor_name: name,
                 donation_amount: amount,
-                pdf_receipt: pdfBase64
-            })
-            .then(function(response) {
+                pdf_link: pdfUrl
+            }).then(function(response) {
                 alert("Email sent successfully!");
             }, function(error) {
                 console.error("Failed to send email:", error);
@@ -81,11 +84,57 @@
             });
         });
 
-        // Function to Convert Image to Base64
+        // Upload PDF to Google Drive
+        async function uploadToGoogleDrive(pdfBlob, fileName) {
+            return new Promise((resolve, reject) => {
+                gapi.load('client:auth2', async function () {
+                    await gapi.client.init({
+                        apiKey: "AIzaSyDgZZgXTnHmNd7Qv-8yIOPXY5l_ySRhJ3M", // Replace with your new API Key
+                        clientId: "735364000421-qfukddmp2t33dqek26kkvdgqrqi18p8b.apps.googleusercontent.com",
+                        discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+                        scope: "https://www.googleapis.com/auth/drive.file"
+                    });
+
+                    await gapi.auth2.getAuthInstance().signIn();
+
+                    let metadata = {
+                        name: fileName,
+                        mimeType: 'application/pdf',
+                        parents: ["18SkC-TSWidRwCymOQbHeJ46SVw1zi73R"] // Your Google Drive Folder ID
+                    };
+
+                    let formData = new FormData();
+                    formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+                    formData.append("file", pdfBlob);
+
+                    let response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${gapi.auth.getToken().access_token}` },
+                        body: formData
+                    });
+
+                    let result = await response.json();
+                    
+                    // Make File Public
+                    await fetch(`https://www.googleapis.com/drive/v3/files/${result.id}/permissions`, {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${gapi.auth.getToken().access_token}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ role: "reader", type: "anyone" })
+                    });
+
+                    resolve(`https://drive.google.com/uc?export=download&id=${result.id}`);
+                });
+            });
+        }
+
+        // Convert Image to Base64
         function getBase64Image(url) {
             return new Promise((resolve, reject) => {
                 let img = new Image();
-                img.crossOrigin = "Anonymous";
+                img.crossOrigin = "";
                 img.src = url;
                 img.onload = function () {
                     let canvas = document.createElement("canvas");
